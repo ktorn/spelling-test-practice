@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="firebase-config.js"></script>
     <style>
         body {
             margin: 0;
@@ -413,8 +412,18 @@
     </div>
 
     <script>
-        // Firebase configuration is loaded from firebase-config.js
-        // This keeps sensitive keys out of the public repository
+        // Firebase configuration
+        // Note: For GitHub Pages, the config is embedded here
+        // For local development, use firebase-config.js instead
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPRbXDK-MRtHTkHQA-HFxrInhcHpGYPvM",
+            authDomain: "lara-spelling.firebaseapp.com",
+            projectId: "lara-spelling",
+            storageBucket: "lara-spelling.firebasestorage.app",
+            messagingSenderId: "201570081943",
+            appId: "1:201570081943:web:67deb4f2f564052da89dd2",
+            measurementId: "G-3H380B9Q2C"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
