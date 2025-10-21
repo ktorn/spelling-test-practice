@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Test Practice - Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            background: #f9f9f9;
+        }
+        
+        .demo-section h2 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-right: 10px;
+        }
+        
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .warning {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Spelling Test Practice App - Demo</h1>
+        
+        <div class="demo-section">
+            <h2>📋 What This App Does</h2>
+            <div class="step">
+                <span class="step-number">1.</span>
+                <strong>Create Batch Mode:</strong> Record yourself saying each spelling word, verify the recording, and save them as a batch.
+            </div>
+            <div class="step">
+                <span class="step-number">2.</span>
+                <strong>Practice Mode:</strong> Select a batch and practice with randomized word order. Words play automatically with a 3-second repeat.
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🚀 Quick Start (Without Firebase)</h2>
+            <div class="step">
+                <span class="step-number">1.</span>
+                Open <code>index.html</code> in your web browser
+            </div>
+            <div class="step">
+                <span class="step-number">2.</span>
+                The app will work for recording and playing back words, but won't save batches between sessions
+            </div>
+            <div class="step">
+                <span class="step-number">3.</span>
+                For full functionality, follow the Firebase setup in the README
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔧 Firebase Setup (For Full Functionality)</h2>
+            <div class="step">
+                <span class="step-number">1.</span>
+                Go to <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>
+            </div>
+            <div class="step">
+                <span class="step-number">2.</span>
+                Create a new project
+            </div>
+            <div class="step">
+                <span class="step-number">3.</span>
+                Enable Firestore Database and Storage
+            </div>
+            <div class="step">
+                <span class="step-number">4.</span>
+                Get your Firebase config and replace the placeholder in <code>index.html</code>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📝 How to Use</h2>
+            
+            <h3>Creating a Batch:</h3>
+            <div class="step">
+                <span class="step-number">1.</span>
+                Click "Create Batch" mode
+            </div>
+            <div class="step">
+                <span class="step-number">2.</span>
+                Type a word and click "Record Word"
+            </div>
+            <div class="step">
+                <span class="step-number">3.</span>
+                Speak clearly, then click "Stop Recording"
+            </div>
+            <div class="step">
+                <span class="step-number">4.</span>
+                Click "Play" to verify the recording
+            </div>
+            <div class="step">
+                <span class="step-number">5.</span>
+                If satisfied, click "Add to Batch"
+            </div>
+            <div class="step">
+                <span class="step-number">6.</span>
+                Repeat for all words, then click "Save Batch"
+            </div>
+            
+            <h3>Practicing:</h3>
+            <div class="step">
+                <span class="step-number">1.</span>
+                Click "Practice" mode
+            </div>
+            <div class="step">
+                <span class="step-number">2.</span>
+                Select a batch from the list
+            </div>
+            <div class="step">
+                <span class="step-number">3.</span>
+                Click "Next Word" to hear the first word
+            </div>
+            <div class="step">
+                <span class="step-number">4.</span>
+                The word repeats automatically after 3 seconds
+            </div>
+            <div class="step">
+                <span class="step-number">5.</span>
+                Continue until all words are practiced
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎨 Features</h2>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Audio Recording:</strong> Uses browser's MediaRecorder API for high-quality audio
+            </div>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Random Practice:</strong> Words are randomized each practice session
+            </div>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Auto-Repeat:</strong> Words automatically repeat after 3 seconds
+            </div>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Progress Tracking:</strong> Shows current word number and total
+            </div>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Cloud Storage:</strong> Batches saved to Firebase for persistence
+            </div>
+            <div class="step">
+                <span class="step-number">✓</span>
+                <strong>Kid-Friendly UI:</strong> Colorful, intuitive interface with emojis
+            </div>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> This app requires microphone access. Make sure to allow microphone permissions when prompted by your browser.
+        </div>
+        
+        <div class="success">
+            <strong>🎉 Ready to Start!</strong> Open <code>index.html</code> in your browser to begin creating spelling test batches for your child!
+        </div>
+    </div>
+</body>
+</html>

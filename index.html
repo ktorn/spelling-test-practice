@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Test Practice</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .mode-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .mode-btn.active {
+            background: #4CAF50;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .mode-btn:not(.active) {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .mode-btn:hover:not(.active) {
+            background: #e0e0e0;
+            transform: scale(1.02);
+        }
+        
+        .content-area {
+            min-height: 400px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .word-input {
+            margin: 20px 0;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+        }
+        
+        .record-btn, .play-btn, .delete-btn, .next-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .record-btn {
+            background: #f44336;
+            color: white;
+        }
+        
+        .record-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+        
+        .record-btn.recording {
+            background: #ff5722;
+            animation: pulse 1s infinite;
+        }
+        
+        .play-btn {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .play-btn:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        
+        .delete-btn {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #f57c00;
+            transform: scale(1.05);
+        }
+        
+        .next-btn {
+            background: #4CAF50;
+            color: white;
+            font-size: 1.5em;
+            padding: 20px 40px;
+            border-radius: 50px;
+        }
+        
+        .next-btn:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+        
+        .next-btn:disabled {
+            background: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .next-btn:disabled:hover {
+            background: #cccccc;
+            transform: none;
+        }
+        
+        .batch-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .batch-item {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        
+        .batch-item:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+            transform: translateY(-2px);
+        }
+        
+        .batch-item.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        
+        .batch-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .batch-controls button {
+            font-size: 0.8em;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .word-item {
+            background: #e3f2fd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .status.recording {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .status.playing {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 2px solid #2196F3;
+        }
+        
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .auth-container {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .google-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+            width: 100%;
+        }
+        
+        .google-btn:hover {
+            background: #3367d6;
+            transform: scale(1.05);
+        }
+        
+        .user-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .admin-panel {
+            background: #f0f8ff;
+            border: 2px solid #2196F3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .invite-section {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .invite-link {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        
+        .copy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #45a049;
+        }
+        
+        .student-mode {
+            background: #f3e5f5;
+            border: 2px solid #9C27B0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Spelling Test Practice</h1>
+        
+        <!-- Authentication Section -->
+        <div id="authSection" class="auth-container">
+            <div class="auth-card">
+                <h2>Welcome to Spelling Test Practice!</h2>
+                <p>Sign in with Google to access your spelling batches</p>
+                <button class="google-btn" id="googleSignInBtn">
+                    <span>🔑</span>
+                    Sign in with Google
+                </button>
+                <div id="authError" class="status hidden"></div>
+            </div>
+        </div>
+        
+        <!-- Main App Section -->
+        <div id="mainApp" class="hidden">
+            <!-- User Info -->
+            <div class="user-info" id="userInfo">
+                <div style="display: flex; align-items: center;">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                    <div>
+                        <div id="userName"></div>
+                        <div id="userRole" style="font-size: 0.9em; color: #666;"></div>
+                    </div>
+                </div>
+                <button class="delete-btn" id="signOutBtn">Sign Out</button>
+            </div>
+            
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="admin-panel hidden">
+                <h3>👨‍💼 Admin Panel</h3>
+                <div class="invite-section">
+                    <h4>📧 Invite Students</h4>
+                    <p>Add student email addresses to give them access to your batches:</p>
+                    <input type="email" id="studentEmail" placeholder="student@example.com" style="width: 300px; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px;">
+                    <button class="play-btn" id="addStudentBtn">Add Student</button>
+                    <div id="inviteLink" class="invite-link hidden"></div>
+                    <button class="copy-btn hidden" id="copyInviteBtn">Copy Link</button>
+                </div>
+            </div>
+            
+            <!-- Student Mode Notice -->
+            <div id="studentMode" class="student-mode hidden">
+                <h3>👨‍🎓 Student Mode</h3>
+                <p>You're logged in as a student. You can practice with batches created by your teacher/parent.</p>
+            </div>
+            
+            <!-- Mode Buttons (Admin Only) -->
+            <div id="modeButtons" class="mode-buttons hidden">
+                <button class="mode-btn active" id="createModeBtn">Create Batch</button>
+                <button class="mode-btn" id="practiceModeBtn">Practice</button>
+            </div>
+            
+            <div class="content-area" id="contentArea">
+                <!-- Content will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration is loaded from firebase-config.js
+        // This keeps sensitive keys out of the public repository
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+
+        class SpellingTestApp {
+            constructor() {
+                this.currentMode = 'create';
+                this.currentBatch = null;
+                this.currentWord = '';
+                this.recorder = null;
+                this.soundFile = null;
+                this.isRecording = false;
+                this.isPlaying = false;
+                this.batches = [];
+                this.currentBatchWords = [];
+                this.practiceWords = [];
+                this.currentPracticeIndex = 0;
+                this.audioContext = null;
+                this.currentUser = null;
+                this.userRole = null;
+                this.adminEmail = null;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupAuthStateListener();
+                this.setupEventListeners();
+            }
+
+            setupAuthStateListener() {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        this.currentUser = user;
+                        await this.checkUserRole();
+                        this.showMainApp();
+                    } else {
+                        this.showAuthScreen();
+                    }
+                });
+            }
+
+            async checkUserRole() {
+                try {
+                    console.log('Checking user role for:', this.currentUser.email);
+                    
+                    // Check if user is admin
+                    const adminDoc = await db.collection('admins').doc(this.currentUser.uid).get();
+                    if (adminDoc.exists) {
+                        console.log('User is admin');
+                        this.userRole = 'admin';
+                        this.adminEmail = this.currentUser.email;
+                        return;
+                    }
+
+                    // Check if user is a student
+                    const studentDoc = await db.collection('students').doc(this.currentUser.uid).get();
+                    if (studentDoc.exists) {
+                        console.log('User is student');
+                        this.userRole = 'student';
+                        this.adminEmail = studentDoc.data().adminEmail;
+                        return;
+                    }
+
+                    // Check if this is the first user (make them admin)
+                    const adminCount = await db.collection('admins').get();
+                    console.log('Admin count:', adminCount.size);
+                    
+                    if (adminCount.empty) {
+                        console.log('No admins found, making user admin');
+                        await this.makeUserAdmin();
+                        return;
+                    }
+
+                    // TEMPORARY: Force admin for your email
+                    if (this.currentUser.email === 'your-email@gmail.com') {
+                        console.log('Forcing admin for your email');
+                        await this.makeUserAdmin();
+                        return;
+                    }
+
+                    // New user - check if they have an invite token
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const inviteToken = urlParams.get('invite');
+                    
+                    if (inviteToken) {
+                        console.log('Processing invite token');
+                        await this.processInviteToken(inviteToken);
+                    } else {
+                        // No role assigned and no invite - show error
+                        this.showAuthError('No access granted. Please use an invite link from your teacher/parent.');
+                        await auth.signOut();
+                    }
+                } catch (error) {
+                    console.error('Error checking user role:', error);
+                    this.showAuthError('Error checking permissions. Please try again.');
+                }
+            }
+
+            async makeUserAdmin() {
+                try {
+                    await db.collection('admins').doc(this.currentUser.uid).set({
+                        email: this.currentUser.email,
+                        name: this.currentUser.displayName,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    this.userRole = 'admin';
+                    this.adminEmail = this.currentUser.email;
+                    
+                    alert('Welcome! You are now the admin. You can create batches and invite students.');
+                    
+                    // Refresh the UI
+                    this.showMainApp();
+                } catch (error) {
+                    console.error('Error making user admin:', error);
+                    this.showAuthError('Error setting up admin account. Please try again.');
+                }
+            }
+
+            async processInviteToken(inviteToken) {
+                try {
+                    const inviteDoc = await db.collection('invites').doc(inviteToken).get();
+                    if (!inviteDoc.exists) {
+                        this.showAuthError('Invalid invite link. Please contact your teacher/parent.');
+                        return;
+                    }
+
+                    const inviteData = inviteDoc.data();
+                    if (inviteData.used) {
+                        this.showAuthError('This invite link has already been used.');
+                        return;
+                    }
+
+                    // Add user as student
+                    await db.collection('students').doc(this.currentUser.uid).set({
+                        email: this.currentUser.email,
+                        name: this.currentUser.displayName,
+                        adminEmail: inviteData.adminEmail,
+                        adminUid: inviteData.adminUid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Mark invite as used
+                    await db.collection('invites').doc(inviteToken).update({
+                        used: true,
+                        usedBy: this.currentUser.uid,
+                        usedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    this.userRole = 'student';
+                    this.adminEmail = inviteData.adminEmail;
+
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (error) {
+                    console.error('Error processing invite:', error);
+                    this.showAuthError('Error processing invite. Please try again.');
+                }
+            }
+
+            setupEventListeners() {
+                // Authentication events
+                document.getElementById('googleSignInBtn').addEventListener('click', () => {
+                    this.signInWithGoogle();
+                });
+                
+                document.getElementById('signOutBtn').addEventListener('click', () => {
+                    this.signOut();
+                });
+
+                // Admin events
+                document.getElementById('addStudentBtn').addEventListener('click', () => {
+                    this.addStudent();
+                });
+                
+                document.getElementById('copyInviteBtn').addEventListener('click', () => {
+                    this.copyInviteLink();
+                });
+
+                // Mode events
+                document.getElementById('createModeBtn').addEventListener('click', () => {
+                    this.switchMode('create');
+                });
+                
+                document.getElementById('practiceModeBtn').addEventListener('click', () => {
+                    this.switchMode('practice');
+                });
+            }
+
+            async signInWithGoogle() {
+                try {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    await auth.signInWithPopup(provider);
+                } catch (error) {
+                    console.error('Sign in error:', error);
+                    this.showAuthError('Sign in failed. Please try again.');
+                }
+            }
+
+            async signOut() {
+                try {
+                    await auth.signOut();
+                } catch (error) {
+                    console.error('Sign out error:', error);
+                }
+            }
+
+            showAuthScreen() {
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+            }
+
+            async showMainApp() {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                // Update user info
+                document.getElementById('userAvatar').src = this.currentUser.photoURL || '';
+                document.getElementById('userName').textContent = this.currentUser.displayName || this.currentUser.email;
+                document.getElementById('userRole').textContent = this.userRole === 'admin' ? '👨‍💼 Admin' : '👨‍🎓 Student';
+
+                // Load batches first, then show appropriate mode
+                await this.loadBatches();
+
+                if (this.userRole === 'admin') {
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    document.getElementById('modeButtons').classList.remove('hidden');
+                    document.getElementById('studentMode').classList.add('hidden');
+                    this.showCreateMode();
+                } else {
+                    document.getElementById('adminPanel').classList.add('hidden');
+                    document.getElementById('modeButtons').classList.add('hidden');
+                    document.getElementById('studentMode').classList.remove('hidden');
+                    this.showPracticeMode();
+                }
+            }
+
+            showAuthError(message) {
+                const errorEl = document.getElementById('authError');
+                errorEl.textContent = message;
+                errorEl.className = 'status error';
+                errorEl.classList.remove('hidden');
+            }
+
+            async addStudent() {
+                const email = document.getElementById('studentEmail').value.trim();
+                if (!email) {
+                    alert('Please enter a student email address.');
+                    return;
+                }
+
+                try {
+                    // Create invite token
+                    const inviteToken = this.generateInviteToken();
+                    const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=${inviteToken}`;
+
+                    // Save invite to database
+                    await db.collection('invites').doc(inviteToken).set({
+                        adminEmail: this.currentUser.email,
+                        adminUid: this.currentUser.uid,
+                        studentEmail: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        used: false
+                    });
+
+                    // Show invite link
+                    document.getElementById('inviteLink').textContent = inviteUrl;
+                    document.getElementById('inviteLink').classList.remove('hidden');
+                    document.getElementById('copyInviteBtn').classList.remove('hidden');
+                    document.getElementById('studentEmail').value = '';
+
+                    alert(`Invite created for ${email}! Copy the link below and send it to the student.`);
+                } catch (error) {
+                    console.error('Error creating invite:', error);
+                    alert('Error creating invite. Please try again.');
+                }
+            }
+
+            generateInviteToken() {
+                return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            }
+
+            copyInviteLink() {
+                const inviteLink = document.getElementById('inviteLink').textContent;
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    alert('Invite link copied to clipboard!');
+                }).catch(() => {
+                    alert('Could not copy to clipboard. Please copy the link manually.');
+                });
+            }
+
+            async renameBatch(batchId, currentName) {
+                const newName = prompt(`Rename batch "${currentName}" to:`, currentName);
+                if (!newName || newName.trim() === '' || newName === currentName) {
+                    return;
+                }
+
+                try {
+                    await db.collection('batches').doc(batchId).update({
+                        name: newName.trim()
+                    });
+                    
+                    // Update local batches array
+                    const batch = this.batches.find(b => b.id === batchId);
+                    if (batch) {
+                        batch.name = newName.trim();
+                    }
+                    
+                    // Refresh the display
+                    this.displayBatches();
+                    
+                    alert(`Batch renamed to "${newName}" successfully!`);
+                } catch (error) {
+                    console.error('Error renaming batch:', error);
+                    alert('Error renaming batch. Please try again.');
+                }
+            }
+
+            async deleteBatch(batchId, batchName) {
+                if (!confirm(`Are you sure you want to delete the batch "${batchName}"? This action cannot be undone.`)) {
+                    return;
+                }
+
+                try {
+                    // Delete the batch document
+                    await db.collection('batches').doc(batchId).delete();
+                    
+                    // Delete audio files from storage
+                    const batch = this.batches.find(b => b.id === batchId);
+                    if (batch && batch.words) {
+                        for (const word of batch.words) {
+                            try {
+                                const audioRef = storage.ref(`batches/${batchId}/${word}.wav`);
+                                await audioRef.delete();
+                            } catch (error) {
+                                console.warn(`Could not delete audio file for word "${word}":`, error);
+                            }
+                        }
+                    }
+                    
+                    // Remove from local batches array
+                    this.batches = this.batches.filter(b => b.id !== batchId);
+                    
+                    // Refresh the display
+                    this.displayBatches();
+                    
+                    alert(`Batch "${batchName}" deleted successfully!`);
+                } catch (error) {
+                    console.error('Error deleting batch:', error);
+                    alert('Error deleting batch. Please try again.');
+                }
+            }
+
+            switchMode(mode) {
+                this.currentMode = mode;
+                
+                // Update button states
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById(mode + 'ModeBtn').classList.add('active');
+                
+                if (mode === 'create') {
+                    this.showCreateMode();
+                } else {
+                    this.showPracticeMode();
+                }
+            }
+
+            showCreateMode() {
+                const content = `
+                    <h2>Create New Batch</h2>
+                    <div>
+                        <input type="text" id="wordInput" class="word-input" placeholder="Enter word to record" />
+                        <br>
+                        <button class="record-btn" id="recordBtn">🎤 Record Word</button>
+                        <button class="play-btn hidden" id="playBtn">▶️ Play</button>
+                        <button class="delete-btn hidden" id="deleteBtn">🗑️ Delete</button>
+                        <button class="play-btn hidden" id="addToBatchBtn" style="background: #4CAF50;">➕ Add to Batch</button>
+                    </div>
+                    <div id="status" class="status hidden"></div>
+                    <div id="currentBatchWords" class="word-list">No words in current batch yet.</div>
+                    <div>
+                        <button class="next-btn" id="saveBatchBtn" style="background: #9C27B0;">💾 Save Batch</button>
+                    </div>
+                `;
+                
+                document.getElementById('contentArea').innerHTML = content;
+                this.setupCreateModeEvents();
+                this.updateCurrentBatchDisplay();
+            }
+
+            showPracticeMode() {
+                const content = `
+                    <h2>Select Batch to Practice</h2>
+                    <div id="batchList" class="batch-list">
+                        <div class="status">Loading batches...</div>
+                    </div>
+                    <div id="practiceArea" class="hidden">
+                        <h3>Practice Session</h3>
+                        <div id="practiceStatus" class="status">Ready to start!</div>
+                        <button class="next-btn" id="nextWordBtn" disabled>Next Word</button>
+                        <div id="progress">Word 1 of ${this.practiceWords.length}</div>
+                    </div>
+                `;
+                
+                document.getElementById('contentArea').innerHTML = content;
+                this.setupPracticeModeEvents();
+                this.displayBatches();
+            }
+
+            setupCreateModeEvents() {
+                document.getElementById('recordBtn').addEventListener('click', () => {
+                    this.toggleRecording();
+                });
+                
+                document.getElementById('playBtn').addEventListener('click', () => {
+                    this.playRecording();
+                });
+                
+                document.getElementById('deleteBtn').addEventListener('click', () => {
+                    this.deleteCurrentWord();
+                });
+                
+                document.getElementById('addToBatchBtn').addEventListener('click', () => {
+                    this.addWordToBatch();
+                });
+                
+                document.getElementById('saveBatchBtn').addEventListener('click', () => {
+                    this.saveBatch();
+                });
+                
+                document.getElementById('wordInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.startRecording();
+                    }
+                });
+            }
+
+            setupPracticeModeEvents() {
+                document.getElementById('nextWordBtn').addEventListener('click', () => {
+                    this.playNextWord();
+                });
+            }
+
+            async toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    this.startRecording();
+                }
+            }
+
+            async startRecording() {
+                const word = document.getElementById('wordInput').value.trim();
+                if (!word) {
+                    this.showStatus('Please enter a word first!', 'error');
+                    return;
+                }
+
+                this.currentWord = word;
+                this.showStatus('Recording... Click to stop', 'recording');
+                
+                try {
+                    // Get user media
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    // Create MediaRecorder for better compatibility
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.audioChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                        this.audioBlob = audioBlob;
+                        
+                        // Create audio URL for playback
+                        this.audioUrl = URL.createObjectURL(audioBlob);
+                        this.soundFile = new Audio(this.audioUrl);
+                        
+                        // Show play, delete, and add to batch buttons
+                        document.getElementById('playBtn').classList.remove('hidden');
+                        document.getElementById('deleteBtn').classList.remove('hidden');
+                        document.getElementById('addToBatchBtn').classList.remove('hidden');
+                        
+                        this.showStatus('Recording complete! Click play to check, or add to batch if satisfied.', 'success');
+                    };
+                    
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    document.getElementById('recordBtn').textContent = '⏹️ Stop Recording';
+                    document.getElementById('recordBtn').classList.add('recording');
+                    
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    this.showStatus('Error accessing microphone. Please check permissions.', 'error');
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    
+                    document.getElementById('recordBtn').textContent = '🎤 Record Word';
+                    document.getElementById('recordBtn').classList.remove('recording');
+                    
+                    // Stop all tracks to release microphone
+                    if (this.mediaRecorder.stream) {
+                        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    }
+                }
+            }
+
+            playRecording() {
+                if (this.soundFile) {
+                    this.soundFile.play();
+                    this.showStatus('Playing recording...', 'playing');
+                    
+                    // Reset status after playback
+                    this.soundFile.onended = () => {
+                        this.showStatus('Recording complete! Click play to check.', 'success');
+                    };
+                }
+            }
+
+            deleteCurrentWord() {
+                if (this.audioUrl) {
+                    URL.revokeObjectURL(this.audioUrl);
+                }
+                this.soundFile = null;
+                this.audioBlob = null;
+                this.audioUrl = null;
+                this.currentWord = '';
+                document.getElementById('wordInput').value = '';
+                document.getElementById('playBtn').classList.add('hidden');
+                document.getElementById('deleteBtn').classList.add('hidden');
+                document.getElementById('addToBatchBtn').classList.add('hidden');
+                this.showStatus('Word deleted. Enter a new word.', 'success');
+            }
+
+            addWordToBatch() {
+                if (this.currentWord && this.audioBlob) {
+                    this.currentBatchWords.push({
+                        word: this.currentWord,
+                        audioBlob: this.audioBlob
+                    });
+                    
+                    this.currentWord = '';
+                    this.soundFile = null;
+                    this.audioBlob = null;
+                    if (this.audioUrl) {
+                        URL.revokeObjectURL(this.audioUrl);
+                        this.audioUrl = null;
+                    }
+                    document.getElementById('wordInput').value = '';
+                    document.getElementById('playBtn').classList.add('hidden');
+                    document.getElementById('deleteBtn').classList.add('hidden');
+                    document.getElementById('addToBatchBtn').classList.add('hidden');
+                    
+                    this.updateCurrentBatchDisplay();
+                    this.showStatus('Word added to batch!', 'success');
+                }
+            }
+
+            updateCurrentBatchDisplay() {
+                const container = document.getElementById('currentBatchWords');
+                if (this.currentBatchWords.length === 0) {
+                    container.innerHTML = '<p>No words in current batch yet.</p>';
+                } else {
+                    container.innerHTML = this.currentBatchWords.map((item, index) => 
+                        `<span class="word-item">${item.word}</span>`
+                    ).join('');
+                }
+            }
+
+            async saveBatch() {
+                if (this.currentBatchWords.length === 0) {
+                    this.showStatus('Please add at least one word to the batch!', 'error');
+                    return;
+                }
+
+                const batchName = prompt('Enter a name for this batch:');
+                if (!batchName) return;
+
+                try {
+                    // Save to Firebase
+                    const batchData = {
+                        name: batchName,
+                        words: this.currentBatchWords.map(item => item.word),
+                        adminEmail: this.currentUser.email,
+                        adminUid: this.currentUser.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    const docRef = await db.collection('batches').add(batchData);
+                    
+                    // Save audio files to Firebase Storage
+                    for (let i = 0; i < this.currentBatchWords.length; i++) {
+                        const word = this.currentBatchWords[i];
+                        const audioRef = storage.ref(`batches/${docRef.id}/${word.word}.wav`);
+                        await audioRef.put(word.audioBlob);
+                    }
+
+                    this.showStatus(`Batch "${batchName}" saved successfully!`, 'success');
+                    this.currentBatchWords = [];
+                    this.updateCurrentBatchDisplay();
+                    this.loadBatches();
+                    
+                } catch (error) {
+                    console.error('Error saving batch:', error);
+                    this.showStatus('Error saving batch. Please try again.', 'error');
+                }
+            }
+
+
+            async loadBatches() {
+                try {
+                    console.log('Loading batches for admin email:', this.adminEmail);
+                    
+                    // Wait a moment to ensure auth is fully ready
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    let query = db.collection('batches');
+                    
+                    // Filter by admin email
+                    if (this.adminEmail) {
+                        query = query.where('adminEmail', '==', this.adminEmail);
+                    }
+                    
+                    const snapshot = await query.get();
+                    this.batches = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    console.log('Loaded batches:', this.batches.length);
+                } catch (error) {
+                    console.error('Error loading batches:', error);
+                    this.batches = [];
+                }
+            }
+
+            displayBatches() {
+                const container = document.getElementById('batchList');
+                if (this.batches.length === 0) {
+                    container.innerHTML = '<p>No batches available. Create some batches first!</p>';
+                } else {
+                    container.innerHTML = this.batches.map(batch => {
+                        const isAdmin = this.userRole === 'admin';
+                        const adminControls = isAdmin ? `
+                            <div class="batch-controls">
+                                <button class="play-btn" onclick="event.stopPropagation(); app.renameBatch('${batch.id}', '${batch.name}')" style="background: #ff9800; font-size: 0.8em; padding: 5px 10px;">✏️ Rename</button>
+                                <button class="delete-btn" onclick="event.stopPropagation(); app.deleteBatch('${batch.id}', '${batch.name}')" style="font-size: 0.8em; padding: 5px 10px;">🗑️ Delete</button>
+                            </div>
+                        ` : '';
+                        
+                        return `
+                            <div class="batch-item" data-batch-id="${batch.id}">
+                                <h4>${batch.name}</h4>
+                                <p>${batch.words.length} words</p>
+                                ${adminControls}
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Add click listeners for batch selection
+                    container.querySelectorAll('.batch-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            this.selectBatch(item.dataset.batchId);
+                        });
+                    });
+                }
+            }
+
+            selectBatch(batchId) {
+                this.currentBatch = this.batches.find(b => b.id === batchId);
+                this.practiceWords = [...this.currentBatch.words].sort(() => Math.random() - 0.5);
+                this.currentPracticeIndex = 0;
+                
+                // Update UI
+                document.querySelectorAll('.batch-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                document.querySelector(`[data-batch-id="${batchId}"]`).classList.add('selected');
+                
+                document.getElementById('practiceArea').classList.remove('hidden');
+                document.getElementById('progress').textContent = `Word 1 of ${this.practiceWords.length}`;
+                
+                // Enable the next word button
+                const nextBtn = document.getElementById('nextWordBtn');
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Next Word';
+                
+                // Update progress to show next word (1 of total)
+                document.getElementById('progress').textContent = `Word 1 of ${this.practiceWords.length}`;
+            }
+
+            async playNextWord() {
+                const nextBtn = document.getElementById('nextWordBtn');
+                
+                if (this.currentPracticeIndex >= this.practiceWords.length) {
+                    // Practice complete - show "Practice Again" button
+                    this.showPracticeStatus('Practice complete! Great job! 🎉', 'success');
+                    nextBtn.textContent = 'Practice Again';
+                    nextBtn.disabled = false;
+                    this.currentPracticeIndex = 0; // Reset for new practice session
+                    return;
+                }
+
+                const word = this.practiceWords[this.currentPracticeIndex];
+                const currentWordNumber = this.currentPracticeIndex + 1;
+                const nextWordNumber = this.currentPracticeIndex + 2;
+                
+                this.showPracticeStatus(`Playing word ${currentWordNumber}...`, 'playing');
+                
+                // Update progress immediately to show current word being played
+                document.getElementById('progress').textContent = `Word ${currentWordNumber} of ${this.practiceWords.length}`;
+                
+                // Disable button while playing
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'Playing...';
+                
+                try {
+                    // Load and play audio from Firebase Storage
+                    const audioRef = storage.ref(`batches/${this.currentBatch.id}/${word}.wav`);
+                    const url = await audioRef.getDownloadURL();
+                    
+                    const audio = new Audio(url);
+                    let playCount = 0;
+                    const maxPlays = 2; // Play twice (original + repeat)
+                    
+                    const handleAudioEnd = () => {
+                        playCount++;
+                        if (playCount < maxPlays) {
+                            // Play again after a short delay
+                            setTimeout(() => {
+                                audio.play();
+                            }, 500); // 0.5 second delay between plays
+                        } else {
+                            // Both plays completed
+                            this.currentPracticeIndex++;
+                            
+                            if (this.currentPracticeIndex < this.practiceWords.length) {
+                                // Update progress to show next word number
+                                document.getElementById('progress').textContent = `Word ${nextWordNumber} of ${this.practiceWords.length}`;
+                                this.showPracticeStatus('Ready for next word!', 'success');
+                                nextBtn.disabled = false;
+                                nextBtn.textContent = 'Next Word';
+                            } else {
+                                // All words completed
+                                this.showPracticeStatus('Practice complete! Great job! 🎉', 'success');
+                                nextBtn.disabled = false;
+                                nextBtn.textContent = 'Practice Again';
+                            }
+                        }
+                    };
+                    
+                    // Set up event listener for when audio ends
+                    audio.addEventListener('ended', handleAudioEnd);
+                    
+                    // Handle audio errors
+                    audio.addEventListener('error', (error) => {
+                        console.error('Audio playback error:', error);
+                        this.showPracticeStatus('Error playing audio. Please try again.', 'error');
+                        nextBtn.disabled = false;
+                        nextBtn.textContent = 'Next Word';
+                    });
+                    
+                    // Start playing
+                    audio.play();
+                    
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    this.showPracticeStatus('Error playing audio. Please try again.', 'error');
+                    // Re-enable button on error
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = 'Next Word';
+                }
+            }
+
+            showStatus(message, type) {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = message;
+                statusEl.className = `status ${type}`;
+                statusEl.classList.remove('hidden');
+            }
+
+            showPracticeStatus(message, type) {
+                const statusEl = document.getElementById('practiceStatus');
+                statusEl.textContent = message;
+                statusEl.className = `status ${type}`;
+            }
+        }
+
+        // Initialize the app when the page loads
+        let app;
+        window.addEventListener('load', () => {
+            app = new SpellingTestApp();
+        });
+    </script>
+</body>
+</html>
