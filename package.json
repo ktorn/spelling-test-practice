@@ -1,0 +1,12 @@
+{
+  "name": "spelling-test-debug",
+  "version": "1.0.0",
+  "description": "Debug script for Firebase database",
+  "main": "debug-firebase.js",
+  "scripts": {
+    "debug": "node debug-firebase.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

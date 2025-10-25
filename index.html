@@ -472,6 +472,9 @@
             async checkUserRole() {
                 try {
                     console.log('Checking user role for:', this.currentUser.email);
+                    console.log('Auth token:', this.currentUser.accessToken);
+                    console.log('User UID:', this.currentUser.uid);
+                    console.log('User email:', this.currentUser.email);
                     
                     // Check if user is admin
                     const adminDoc = await db.collection('admins').doc(this.currentUser.uid).get();
@@ -1051,6 +1054,8 @@
             async loadBatches() {
                 try {
                     console.log('Loading batches for admin email:', this.adminEmail);
+                    console.log('Current user:', this.currentUser);
+                    console.log('User role:', this.userRole);
                     
                     // Wait a moment to ensure auth is fully ready
                     await new Promise(resolve => setTimeout(resolve, 100));

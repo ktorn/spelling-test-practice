@@ -6,6 +6,14 @@
 # Firebase config (if using separate file)
 firebase-config.js
 
+# Firebase service account keys (NEVER commit these!)
+*service-account*.json
+service-account-key.json
+firebase-adminsdk-*.json
+
+# Debug files that reference secrets
+debug-firebase.js
+
 # Node modules
 node_modules/
 
